@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "deploy": "tsc && vite build && butler push dist quackqack/ld54:html5",
     "preview": "vite preview"
   },
   "dependencies": {
