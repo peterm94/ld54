@@ -12,7 +12,7 @@ import {
     Log,
     LogLevel,
     MathUtil,
-    RectCollider,
+    RectCollider, RenderCircle,
     Rigidbody,
     Scene,
     SimplePhysics,
@@ -31,6 +31,7 @@ enum Layer {
     WALL,
     PLAYER,
     EXIT,
+    KEY,
 }
 
 let currentLevel = 1;
@@ -38,6 +39,7 @@ let currentLevel = 1;
 const collisionMatrix = new CollisionMatrix();
 collisionMatrix.addCollision(Layer.PLAYER, Layer.WALL);
 collisionMatrix.addCollision(Layer.PLAYER, Layer.EXIT);
+collisionMatrix.addCollision(Layer.PLAYER, Layer.KEY);
 
 class MainScene extends Scene {
 
@@ -79,9 +81,11 @@ class MainScene extends Scene {
                     break;
                 case 6:
                     // locked wall
+                    this.addEntity(new LockedWall(x, y, collSystem));
                     break;
                 case 7:
                     // key
+                    this.addEntity(new KeyTile(x, y, collSystem));
                     break;
             }
         })
@@ -129,6 +133,36 @@ class Wall extends Entity {
     }
 }
 
+class KeyTile extends Entity {
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
+        super("key", x, y, Layer.KEY);
+    }
+
+    onAdded() {
+        super.onAdded();
+        const sprite = this.scene.game.getResource("atlas").texture(2, 1);
+
+        this.addComponent(new Sprite(sprite));
+        this.addComponent(new CircleCollider(this.collSystem, {radius: 8, yOff: 8, xOff: 8, layer: Layer.KEY}));
+    }
+}
+
+class LockedWall extends Entity {
+
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
+        super("lockedwall", x, y, Layer.WALL);
+    }
+
+    onAdded() {
+        super.onAdded();
+        const sprite = this.scene.game.getResource("atlas").texture(1, 1);
+
+        this.addComponent(new Sprite(sprite));
+        this.addComponent(new RectCollider(this.collSystem, {width: 16, height: 16, layer: Layer.WALL}));
+    }
+}
+
+
 class Exit extends Entity {
 
     constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
@@ -165,10 +199,23 @@ class Player extends Entity {
 
 
         collider.onTriggerEnter.register((caller, data) => {
-            if (data.other.layer == Layer.EXIT) {
-                ++currentLevel;
+
+            switch (data.other.layer) {
+                case Layer.EXIT:
+                    ++currentLevel;
+                case Layer.WALL:
+                    // this.scene.entities.filter(value => value.name === "wall").forEach(value => {
+                    //     value.getComponent<Sprite>(Sprite)?.destroy();
+                    //     value.addComponent(new Sprite(this.scene.game.getResource("atlas").texture(3, 1)));
+                    // });
+                    this.scene.game.setScene(new MainScene(this.scene.game));
+                    break;
+                case Layer.KEY:
+                    data.other.getEntity().destroy();
+                    this.scene.entities.filter(value => value.name === "lockedwall").forEach(value => value.destroy());
+                    break;
+                default:
             }
-            this.scene.game.setScene(new MainScene(this.scene.game));
         })
 
     }
