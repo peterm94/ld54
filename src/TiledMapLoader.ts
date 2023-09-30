@@ -3,7 +3,7 @@
  */
 export class TiledMapLoader
 {
-    private readonly map: TiledMap;
+    readonly map: TiledMap;
 
     /**
      * Load a JSON Tiled map. The map should be imported from JSON file straight in.
@@ -22,12 +22,12 @@ export class TiledMapLoader
 
     /**
      * Load a given layer from the map.
-     * @param layerId The ID of the layer to load.
+     * @param layerName The name of the layer to load.
      * @param fn The function called for every tile loaded. Can be used as an alternative to the function map.
      */
-    loadFn(layerId: number, fn: (tileId: number, x: number, y: number) => void): void
+    loadFn(layerName: string, fn: (tileId: number, x: number, y: number) => void): void
     {
-        const layer = this.map.layers[layerId];
+        const layer = this.map.layers.find(value => value.name === layerName)!;
 
         layer.data.forEach((value, index) => {
             const row = Math.floor(index / layer.width);

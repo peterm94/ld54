@@ -3,10 +3,14 @@ import {
     CircleCollider,
     CollisionMatrix,
     CollisionSystem,
-    Component, DebugCollisionSystem,
+    Component,
     Entity,
     Game,
+    GlobalSystem,
     Key,
+    LagomType,
+    Log,
+    LogLevel,
     MathUtil,
     RectCollider,
     Rigidbody,
@@ -17,20 +21,26 @@ import {
     SpriteSheet,
     System
 } from "lagom-engine";
-import level1 from "./levels/level1.json";
+
 import {TiledMapLoader} from "./TiledMapLoader.ts";
 import {DiscreteRbodyCollisionSystem} from "./Physics.ts";
 import atlasSpr from "./art/atlas.png";
+import levels from "./levels/level1.json";
 
 enum Layer {
     WALL,
     PLAYER,
+    EXIT,
 }
+
+let currentLevel = 1;
 
 const collisionMatrix = new CollisionMatrix();
 collisionMatrix.addCollision(Layer.PLAYER, Layer.WALL);
+collisionMatrix.addCollision(Layer.PLAYER, Layer.EXIT);
 
 class MainScene extends Scene {
+
     onAdded() {
         super.onAdded();
 
@@ -38,9 +48,14 @@ class MainScene extends Scene {
         this.addSystem(new PlayerMover());
         const collSystem = this.addGlobalSystem(new DiscreteRbodyCollisionSystem(collisionMatrix));
         // this.addGlobalSystem(new DebugCollisionSystem(collSystem));
-        const loader = new TiledMapLoader(level1);
+        this.addGlobalSystem(new Cheats());
+        const loader = new TiledMapLoader(levels);
 
-        loader.loadFn(0, (tileId, x, y) => {
+        const layerCount = loader.map.layers.length;
+        currentLevel = MathUtil.clamp(currentLevel, 0, layerCount);
+
+        console.log(currentLevel.toString());
+        loader.loadFn(currentLevel.toString(), (tileId, x, y) => {
             switch (tileId) {
                 case 0:
                     break;
@@ -50,6 +65,7 @@ class MainScene extends Scene {
                     break;
                 case 2:
                     // exit
+                    this.addEntity(new Exit(x, y, collSystem));
                     break;
                 case 3:
                     // player
@@ -84,6 +100,7 @@ export class LD54 extends Game {
             backgroundColor: 0x272744
         });
 
+        Log.logLevel = LogLevel.DEBUG;
         this.addResource("atlas", new SpriteSheet(atlasSpr, 16, 16));
 
         this.setScene(new DummyScene(this));
@@ -112,6 +129,21 @@ class Wall extends Entity {
     }
 }
 
+class Exit extends Entity {
+
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
+        super("exit", x, y, Layer.EXIT);
+    }
+
+    onAdded() {
+        super.onAdded();
+        const sprite = this.scene.game.getResource("atlas").texture(0, 2);
+
+        this.addComponent(new Sprite(sprite));
+        this.addComponent(new CircleCollider(this.collSystem, {radius: 8, xOff: 8, yOff: 8, layer: Layer.EXIT}));
+    }
+}
+
 class Player extends Entity {
 
     constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
@@ -127,13 +159,16 @@ class Player extends Entity {
         // this.addComponent(new RenderCircle(0, 0, 4, 0xa2a832));
         // this.addComponent(new RenderRect(0, 0, 4, 10, 0xa2a832));
         this.addComponent(new Rigidbody(BodyType.Discrete));
-        const collider = this.addComponent(new CircleCollider(this.collSystem, {layer:Layer.PLAYER, radius: 4}))
+        const collider = this.addComponent(new CircleCollider(this.collSystem, {layer: Layer.PLAYER, radius: 4}))
         this.addComponent(new SimplePhysicsBody({angCap: 0.04, angDrag: 0.005, linCap: 1}));
         this.addComponent(new PlayerControlled());
 
 
         collider.onTriggerEnter.register((caller, data) => {
-            this.destroy();
+            if (data.other.layer == Layer.EXIT) {
+                ++currentLevel;
+            }
+            this.scene.game.setScene(new MainScene(this.scene.game));
         })
 
     }
@@ -162,5 +197,22 @@ class PlayerMover extends System<[SimplePhysicsBody, PlayerControlled]> {
                 body.move(moveVector.x, moveVector.y);
             }
         })
+    }
+}
+
+class Cheats extends GlobalSystem {
+    types(): LagomType<Component>[] {
+        return [];
+    }
+
+    update(delta: number): void {
+        if (this.getScene().game.keyboard.isKeyPressed(Key.ArrowLeft)) {
+            --currentLevel;
+            this.scene.game.setScene(new MainScene(this.scene.game));
+        }
+        if (this.getScene().game.keyboard.isKeyPressed(Key.ArrowRight)) {
+            ++currentLevel;
+            this.scene.game.setScene(new MainScene(this.scene.game));
+        }
     }
 }

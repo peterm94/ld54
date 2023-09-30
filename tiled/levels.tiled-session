@@ -9,6 +9,14 @@
         "levels"
     ],
     "fileStates": {
+        "level1.tmx": {
+            "scale": 4,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 190.25,
+                "y": 96.5
+            }
+        },
         "levels/level1.json": {
             "scale": 4.6460937499999995,
             "selectedLayer": 0,
@@ -35,7 +43,7 @@
             "scaleInEditor": 1
         }
     },
-    "last.exportedFilePath": "C:/repos/gloam-engine/web/src/LD54/levels",
+    "last.exportedFilePath": "C:/repos/ld54/src/levels",
     "last.imagePath": "C:/repos/ld54/tiled",
     "map.height": 16,
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
@@ -48,6 +56,7 @@
     ],
     "project": "levels.tiled-project",
     "recentFiles": [
+        "level1.tmx",
         "tiles.tsx",
         "levels/tiles.tsx",
         "levels/level1.tmx"
