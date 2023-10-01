@@ -1,20 +1,23 @@
 import {
     AnimatedSpriteController,
     BodyType,
-    CircleCollider, Collider,
+    CircleCollider,
+    Collider,
     CollisionSystem,
     Component,
     Entity,
-    Key, LagomType,
+    Key,
     MathUtil,
-    RenderCircle,
     Rigidbody,
     SimplePhysicsBody,
     Sprite,
-    System, Timer
+    System,
+    TextDisp,
+    Timer
 } from "lagom-engine";
 import {MainScene} from "./MainScene.ts";
 import {Layer, LD54} from "./LD54.ts";
+import {ActionOnPress} from "./ActionOnPress.ts";
 
 export class Player extends Entity {
 
@@ -51,17 +54,17 @@ export class Player extends Entity {
 
             switch (data.other.layer) {
                 case Layer.EXIT:
-                    caller.getEntity().addComponent(new ShrinkMe());
+                    caller.getEntity().addComponent(new ShrinkMe(false));
                     caller.getEntity().getComponent(PlayerControlled)?.destroy();
                     caller.getEntity().getComponent(Collider)?.destroy();
+                    caller.getScene().getEntityWithName("tracker")?.getComponent(Timer)?.destroy();
                     ++LD54.currentLevel;
                     break;
                 case Layer.WALL:
-                    // this.scene.entities.filter(value => value.name === "wall").forEach(value => {
-                    //     value.getComponent<Sprite>(Sprite)?.destroy();
-                    //     value.addComponent(new Sprite(this.scene.game.getResource("atlas").texture(3, 1)));
-                    // });
-                    this.scene.game.setScene(new MainScene(this.scene.game));
+                    caller.getEntity().addComponent(new ShrinkMe(true));
+                    caller.getEntity().getComponent(PlayerControlled)?.destroy();
+                    caller.getEntity().getComponent(Collider)?.destroy();
+                    caller.getScene().getEntityWithName("tracker")?.getComponent(Timer)?.destroy();
                     break;
                 case Layer.KEY:
                     data.other.getEntity().destroy();
@@ -69,6 +72,7 @@ export class Player extends Entity {
                     break;
                 case Layer.TOKEN:
                     data.other.getEntity().destroy();
+                    LD54.currentLevelBonus = true;
                     break;
                 default:
             }
@@ -79,21 +83,60 @@ export class Player extends Entity {
 
 export class ShrinkMe extends Component {
     scale = 1;
+
+    constructor(readonly restart: boolean) {
+        super();
+    }
 }
+
+export class EndOfLevel extends Entity {
+
+    constructor() {
+        super("endoflevel", 64, 80, 0);
+    }
+
+    onAdded() {
+        super.onAdded();
+        const complete = this.scene.game.getResource("complete").textureFromIndex(0);
+        const token = this.scene.game.getResource("atlas").texture(2, 2);
+
+        this.addComponent(new Sprite(complete));
+        this.addComponent(new Timer(300, null)).onTrigger.register(caller => {
+            this.scene.addSystem(new ActionOnPress(() => {
+                this.scene.game.setScene(new MainScene(this.scene.game))
+            }));
+        });
+        this.addComponent(new TextDisp(22, 40, `TIME: ${LD54.currentLevelTime.toString().padStart(3, '0')}`, {fontFamily: "myPixelFont2", fill: 0xfbf5ef, fontSize: 12}));
+        if (LD54.currentLevelBonus) {
+            this.addComponent(new TextDisp(22, 60, "BONUS:", {fontFamily: "myPixelFont2", fill: 0xfbf5ef, fontSize: 12}));
+            this.addComponent(new Sprite(token, {xOffset: 80, yOffset: 60}));
+        }
+    }
+}
+
 export class Shrinker extends System<[Sprite, ShrinkMe]> {
 
     speed = 5;
     types = () => [Sprite, ShrinkMe];
+
     update(delta: number): void {
-        this.runOnEntities((entity, sprite, shrinkMe) =>  {
+        this.runOnEntities((entity, sprite, shrinkMe) => {
             shrinkMe.scale -= delta / 1000 * this.speed;
             sprite.applyConfig({yScale: shrinkMe.scale, xScale: shrinkMe.scale});
 
             if (shrinkMe.scale <= 0) {
                 shrinkMe.destroy();
-                entity.addComponent(new Timer(1000, null, false)).onTrigger.register(() => {
-                    this.scene.game.setScene(new MainScene(this.scene.game));
-                });
+                entity.destroy();
+                const timer = this.scene.addEntity(new Entity("delayed")).addComponent(new Timer(500, null));
+                if (shrinkMe.restart) {
+                    timer.onTrigger.register(() => {
+                        this.scene.game.setScene(new MainScene(this.scene.game));
+                    });
+                } else {
+                    timer.onTrigger.register(() => {
+                        this.scene.addGUIEntity(new EndOfLevel());
+                    });
+                }
             }
         })
     }
@@ -102,11 +145,11 @@ export class Shrinker extends System<[Sprite, ShrinkMe]> {
 class PlayerControlled extends Component {
 }
 
-export class PlayerMover extends System<[SimplePhysicsBody, AnimatedSpriteController, PlayerControlled ]> {
+export class PlayerMover extends System<[SimplePhysicsBody, AnimatedSpriteController, PlayerControlled]> {
 
     rotateSpeed = 0.15;
     moveSpeed = 0.00005;
-    types = () => [SimplePhysicsBody,AnimatedSpriteController, PlayerControlled];
+    types = () => [SimplePhysicsBody, AnimatedSpriteController, PlayerControlled];
 
     update(delta: number): void {
         this.runOnEntities((entity, body, sprite) => {

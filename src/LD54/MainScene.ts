@@ -14,19 +14,22 @@ import {
 import {DiscreteRbodyCollisionSystem} from "./Physics.ts";
 import {TiledMap, TiledMapLoader} from "./TiledMapLoader.ts";
 import levels from "../levels/level1.json";
-import {Player, PlayerMover, Shrinker} from "./Player.ts";
+import {EndOfLevel, Player, PlayerMover, Shrinker} from "./Player.ts";
 import {BlockMover, MovingWall} from "./MovingWall.ts";
 import {Token, TokenExpirer} from "./Token.ts";
 import {Layer, LD54} from "./LD54.ts";
 import {SlopeWall, Wall} from "./Wall.ts";
 import {KeyTile, LockedWall} from "./LockedWall.ts";
 import {Exit} from "./Exit.ts";
+import {Tracker} from "./Tracker.ts";
 
 export class MainScene extends Scene {
 
     onAdded() {
         super.onAdded();
 
+        LD54.currentLevelTime = 0;
+        LD54.currentLevelBonus = false;
 
         const collisionMatrix = new CollisionMatrix();
         collisionMatrix.addCollision(Layer.PLAYER, Layer.WALL);
@@ -51,8 +54,7 @@ export class MainScene extends Scene {
         const layerCount = loader.map.layers.length;
         LD54.currentLevel = MathUtil.clamp(LD54.currentLevel, 0, layerCount);
 
-        const disp = this.addGUIEntity(new Entity("leveldisp", 10, 225, 0));
-        disp.addComponent(new TextDisp(0, 0, LD54.currentLevel.toString(), {fontFamily: "myPixelFont", fill: 0xfbf5ef, fontSize: 24}));
+        this.addGUIEntity(new Tracker());
 
         console.log(LD54.currentLevel.toString());
         loader.loadFn(LD54.currentLevel.toString(), (tileId, x, y) => {
