@@ -3,7 +3,7 @@ import "./main.css";
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div id="main" style="align-items: center; justify-content: center; height: 100%; display: flex">
   </div>
-<!--  <canvas id="detect-render" width="256" height="256""></canvas>-->
+  <canvas id="detect-render" width="256" height="256""></canvas>
 
 `
 

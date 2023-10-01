@@ -4,6 +4,7 @@ import {
     CollisionMatrix,
     CollisionSystem,
     Component,
+    DebugCollisionSystem,
     Entity,
     Game,
     GlobalSystem,
@@ -12,7 +13,8 @@ import {
     Log,
     LogLevel,
     MathUtil,
-    RectCollider, RenderCircle,
+    PolyCollider,
+    RectCollider,
     Rigidbody,
     Scene,
     SimplePhysics,
@@ -27,7 +29,8 @@ import {DiscreteRbodyCollisionSystem} from "./Physics.ts";
 import atlasSpr from "./art/atlas.png";
 import levels from "./levels/level1.json";
 
-enum Layer {
+enum Layer
+{
     WALL,
     PLAYER,
     EXIT,
@@ -41,15 +44,17 @@ collisionMatrix.addCollision(Layer.PLAYER, Layer.WALL);
 collisionMatrix.addCollision(Layer.PLAYER, Layer.EXIT);
 collisionMatrix.addCollision(Layer.PLAYER, Layer.KEY);
 
-class MainScene extends Scene {
+class MainScene extends Scene
+{
 
-    onAdded() {
+    onAdded()
+    {
         super.onAdded();
 
         this.addSystem(new SimplePhysics());
         this.addSystem(new PlayerMover());
         const collSystem = this.addGlobalSystem(new DiscreteRbodyCollisionSystem(collisionMatrix));
-        // this.addGlobalSystem(new DebugCollisionSystem(collSystem));
+        this.addGlobalSystem(new DebugCollisionSystem(collSystem));
         this.addGlobalSystem(new Cheats());
         const loader = new TiledMapLoader(levels);
 
@@ -58,7 +63,8 @@ class MainScene extends Scene {
 
         console.log(currentLevel.toString());
         loader.loadFn(currentLevel.toString(), (tileId, x, y) => {
-            switch (tileId) {
+            switch (tileId)
+            {
                 case 0:
                     break;
                 case 1:
@@ -87,16 +93,51 @@ class MainScene extends Scene {
                     // key
                     this.addEntity(new KeyTile(x, y, collSystem));
                     break;
+                case 9:
+                    // UL
+                    this.addEntity(new SlopeWall(x, y, collSystem, 1));
+                    break;
+                case 10:
+                    // BL
+                    this.addEntity(new SlopeWall(x, y, collSystem, 0));
+                    break;
+                case 11:
+                    // BR
+                    this.addEntity(new SlopeWall(x, y, collSystem, 3));
+                    break;
+                case 12:
+                    // UR
+                    this.addEntity(new SlopeWall(x, y, collSystem, 2));
+                    break;
+                case 13:
+                    // right mover
+                    // this.addEntity(new KeyTile(x, y, collSystem));
+                    break;
+                case 14:
+                    // down mover
+                    // this.addEntity(new KeyTile(x, y, collSystem));
+                    break;
+                case 15:
+                    // left mover
+                    // this.addEntity(new KeyTile(x, y, collSystem));
+                    break;
+                case 16:
+                    // up mover
+                    // this.addEntity(new KeyTile(x, y, collSystem));
+                    break;
             }
         })
     }
 }
 
-class DummyScene extends Scene {
+class DummyScene extends Scene
+{
 }
 
-export class LD54 extends Game {
-    constructor() {
+export class LD54 extends Game
+{
+    constructor()
+    {
         super({
             width: 256,
             height: 256,
@@ -118,13 +159,16 @@ export class LD54 extends Game {
 }
 
 
-class Wall extends Entity {
+class Wall extends Entity
+{
 
-    constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem)
+    {
         super("wall", x, y, Layer.WALL);
     }
 
-    onAdded() {
+    onAdded()
+    {
         super.onAdded();
         const sprite = this.scene.game.getResource("atlas").texture(0, 1);
 
@@ -133,12 +177,46 @@ class Wall extends Entity {
     }
 }
 
-class KeyTile extends Entity {
-    constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
+class SlopeWall extends Entity
+{
+
+    colliders = [
+        [[0, 0], [0, 16], [16, 16]], // BL
+        [[0, 16], [0, 0], [16, 0]], // UL
+        [[0, 0], [16, 0], [16, 16]], // UR
+        [[0, 16], [16, 16], [16, 0]], // BR
+    ]
+
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem, readonly rotation: number)
+    {
+        super("wall", x, y, Layer.WALL);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+        const sprite = this.scene.game.getResource("atlas").texture(0, 3);
+
+        this.addComponent(new Sprite(sprite, {
+            xAnchor: 0.5,
+            yAnchor: 0.5,
+            xOffset: 8,
+            yOffset: 8,
+            rotation: MathUtil.degToRad(this.rotation * 90)
+        }));
+        this.addComponent(new PolyCollider(this.collSystem, {layer: Layer.WALL, points: this.colliders[this.rotation]}));
+    }
+}
+
+class KeyTile extends Entity
+{
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem)
+    {
         super("key", x, y, Layer.KEY);
     }
 
-    onAdded() {
+    onAdded()
+    {
         super.onAdded();
         const sprite = this.scene.game.getResource("atlas").texture(2, 1);
 
@@ -147,13 +225,16 @@ class KeyTile extends Entity {
     }
 }
 
-class LockedWall extends Entity {
+class LockedWall extends Entity
+{
 
-    constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem)
+    {
         super("lockedwall", x, y, Layer.WALL);
     }
 
-    onAdded() {
+    onAdded()
+    {
         super.onAdded();
         const sprite = this.scene.game.getResource("atlas").texture(1, 1);
 
@@ -163,13 +244,16 @@ class LockedWall extends Entity {
 }
 
 
-class Exit extends Entity {
+class Exit extends Entity
+{
 
-    constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem)
+    {
         super("exit", x, y, Layer.EXIT);
     }
 
-    onAdded() {
+    onAdded()
+    {
         super.onAdded();
         const sprite = this.scene.game.getResource("atlas").texture(0, 2);
 
@@ -178,13 +262,16 @@ class Exit extends Entity {
     }
 }
 
-class Player extends Entity {
+class Player extends Entity
+{
 
-    constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem)
+    {
         super("player", x, y, Layer.PLAYER);
     }
 
-    onAdded() {
+    onAdded()
+    {
         super.onAdded();
 
         const sprite = this.scene.game.getResource("atlas").textureFromIndex(0);
@@ -200,7 +287,8 @@ class Player extends Entity {
 
         collider.onTriggerEnter.register((caller, data) => {
 
-            switch (data.other.layer) {
+            switch (data.other.layer)
+            {
                 case Layer.EXIT:
                     ++currentLevel;
                 case Layer.WALL:
@@ -221,25 +309,31 @@ class Player extends Entity {
     }
 }
 
-class PlayerControlled extends Component {
+class PlayerControlled extends Component
+{
 }
 
-class PlayerMover extends System<[SimplePhysicsBody, PlayerControlled]> {
+class PlayerMover extends System<[SimplePhysicsBody, PlayerControlled]>
+{
 
     rotateSpeed = 0.15;
     moveSpeed = 0.00005;
     types = () => [SimplePhysicsBody, PlayerControlled];
 
-    update(delta: number): void {
+    update(delta: number): void
+    {
         this.runOnEntities((entity, body) => {
-            if (this.getScene().game.keyboard.isKeyDown(Key.KeyA)) {
+            if (this.getScene().game.keyboard.isKeyDown(Key.KeyA))
+            {
                 body.rotate(MathUtil.degToRad(delta * -this.rotateSpeed));
             }
 
-            if (this.getScene().game.keyboard.isKeyDown(Key.KeyD)) {
+            if (this.getScene().game.keyboard.isKeyDown(Key.KeyD))
+            {
                 body.rotate(MathUtil.degToRad(delta * this.rotateSpeed));
             }
-            if (this.getScene().game.keyboard.isKeyDown(Key.KeyW)) {
+            if (this.getScene().game.keyboard.isKeyDown(Key.KeyW))
+            {
                 const moveVector = MathUtil.lengthDirXY(delta * this.moveSpeed, entity.transform.rotation);
                 body.move(moveVector.x, moveVector.y);
             }
@@ -247,17 +341,22 @@ class PlayerMover extends System<[SimplePhysicsBody, PlayerControlled]> {
     }
 }
 
-class Cheats extends GlobalSystem {
-    types(): LagomType<Component>[] {
+class Cheats extends GlobalSystem
+{
+    types(): LagomType<Component>[]
+    {
         return [];
     }
 
-    update(delta: number): void {
-        if (this.getScene().game.keyboard.isKeyPressed(Key.ArrowLeft)) {
+    update(delta: number): void
+    {
+        if (this.getScene().game.keyboard.isKeyPressed(Key.ArrowLeft))
+        {
             --currentLevel;
             this.scene.game.setScene(new MainScene(this.scene.game));
         }
-        if (this.getScene().game.keyboard.isKeyPressed(Key.ArrowRight)) {
+        if (this.getScene().game.keyboard.isKeyPressed(Key.ArrowRight))
+        {
             ++currentLevel;
             this.scene.game.setScene(new MainScene(this.scene.game));
         }

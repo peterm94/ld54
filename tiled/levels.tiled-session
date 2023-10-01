@@ -40,7 +40,7 @@
         "tiles.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1,
-            "scaleInEditor": 1
+            "scaleInEditor": 3
         }
     },
     "last.exportedFilePath": "C:/repos/ld54/src/levels",
@@ -56,8 +56,8 @@
     ],
     "project": "levels.tiled-project",
     "recentFiles": [
-        "level1.tmx",
         "tiles.tsx",
+        "level1.tmx",
         "levels/tiles.tsx",
         "levels/level1.tmx"
     ],
