@@ -1,12 +1,17 @@
 import {
+    AnimatedSpriteController,
     BodyType,
     CircleCollider,
     CollisionSystem,
     Component,
-    Entity, Key, MathUtil,
+    Entity,
+    Key,
+    MathUtil,
+    RenderCircle,
     Rigidbody,
     SimplePhysicsBody,
-    Sprite, System
+    Sprite,
+    System
 } from "lagom-engine";
 import {MainScene} from "./MainScene.ts";
 import {Layer, LD54} from "./LD54.ts";
@@ -20,13 +25,24 @@ export class Player extends Entity {
     onAdded() {
         super.onAdded();
 
-        const sprite = this.scene.game.getResource("atlas").textureFromIndex(0);
+        const atlas = this.scene.game.getResource("atlas");
 
-        this.addComponent(new Sprite(sprite, {xAnchor: 0.5, yAnchor: 0.5}));
-        // this.addComponent(new RenderCircle(0, 0, 4, 0xa2a832));
-        // this.addComponent(new RenderRect(0, 0, 4, 10, 0xa2a832));
         this.addComponent(new Rigidbody(BodyType.Discrete));
+        this.addComponent(new AnimatedSpriteController(0, [
+            {
+                id: 0,
+                textures: [atlas.textureFromIndex(0)],
+                config: {xAnchor: 0.5, yAnchor: 0.5, xOffset: -2},
+            },
+            {
+                id: 1,
+                textures: atlas.textureSliceFromRow(0, 1, 4),
+                config: {xAnchor: 0.5, yAnchor: 0.5, xOffset: -2, animationSpeed: 100}
+            }
+        ]))
         const collider = this.addComponent(new CircleCollider(this.collSystem, {layer: Layer.PLAYER, radius: 4}))
+        // this.addComponent(new RenderCircle(0, 0, 4, null, 0xf20f2f));
+
         this.addComponent(new SimplePhysicsBody({angCap: 0.04, angDrag: 0.005, linCap: 1}));
         this.addComponent(new PlayerControlled());
 
@@ -47,6 +63,9 @@ export class Player extends Entity {
                     data.other.getEntity().destroy();
                     this.scene.entities.filter(value => value.name === "lockedwall").forEach(value => value.destroy());
                     break;
+                case Layer.TOKEN:
+                    data.other.getEntity().destroy();
+                    break;
                 default:
             }
         })
@@ -58,14 +77,14 @@ export class Player extends Entity {
 class PlayerControlled extends Component {
 }
 
-export class PlayerMover extends System<[SimplePhysicsBody, PlayerControlled]> {
+export class PlayerMover extends System<[SimplePhysicsBody, AnimatedSpriteController, PlayerControlled ]> {
 
     rotateSpeed = 0.15;
     moveSpeed = 0.00005;
-    types = () => [SimplePhysicsBody, PlayerControlled];
+    types = () => [SimplePhysicsBody,AnimatedSpriteController, PlayerControlled];
 
     update(delta: number): void {
-        this.runOnEntities((entity, body) => {
+        this.runOnEntities((entity, body, sprite) => {
             if (this.getScene().game.keyboard.isKeyDown(Key.KeyA)) {
                 body.rotate(MathUtil.degToRad(delta * -this.rotateSpeed));
             }
@@ -76,6 +95,10 @@ export class PlayerMover extends System<[SimplePhysicsBody, PlayerControlled]> {
             if (this.getScene().game.keyboard.isKeyDown(Key.KeyW)) {
                 const moveVector = MathUtil.lengthDirXY(delta * this.moveSpeed, entity.transform.rotation);
                 body.move(moveVector.x, moveVector.y);
+                sprite.setAnimation(1, false);
+            } else {
+                sprite.setAnimation(0, false);
+
             }
         })
     }

@@ -1,4 +1,14 @@
-import {CollisionMatrix, Component, GlobalSystem, Key, LagomType, MathUtil, Scene, SimplePhysics} from "lagom-engine";
+import {
+    CollisionMatrix,
+    Component,
+    FrameTriggerSystem,
+    GlobalSystem,
+    Key,
+    LagomType,
+    MathUtil,
+    Scene,
+    SimplePhysics
+} from "lagom-engine";
 import {DiscreteRbodyCollisionSystem} from "./Physics.ts";
 import {TiledMap, TiledMapLoader} from "./TiledMapLoader.ts";
 import levels from "../levels/level1.json";
@@ -21,6 +31,7 @@ export class MainScene extends Scene {
         collisionMatrix.addCollision(Layer.WALL, Layer.WALL);
         collisionMatrix.addCollision(Layer.PLAYER, Layer.EXIT);
         collisionMatrix.addCollision(Layer.PLAYER, Layer.KEY);
+        collisionMatrix.addCollision(Layer.PLAYER, Layer.TOKEN);
 
         this.addSystem(new SimplePhysics());
         this.addSystem(new PlayerMover());
@@ -29,6 +40,7 @@ export class MainScene extends Scene {
         const collSystem = this.addGlobalSystem(new DiscreteRbodyCollisionSystem(collisionMatrix));
         // this.addGlobalSystem(new DebugCollisionSystem(collSystem));
         this.addGlobalSystem(new Cheats());
+        this.addGlobalSystem(new FrameTriggerSystem());
         const loader = new TiledMapLoader(levels as TiledMap);
 
         const layerCount = loader.map.layers.length;

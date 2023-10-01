@@ -3,11 +3,11 @@ import atlasSpr from "../art/atlas.png";
 import {MainScene} from "./MainScene.ts";
 
 export enum Layer {
+    TOKEN,
     WALL,
-    PLAYER,
     EXIT,
     KEY,
-    TOKEN,
+    PLAYER,
 }
 
 class DummyScene extends Scene {
