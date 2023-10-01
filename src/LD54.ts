@@ -4,7 +4,6 @@ import {
     CollisionMatrix,
     CollisionSystem,
     Component,
-    DebugCollisionSystem,
     Entity,
     Game,
     GlobalSystem,
@@ -14,7 +13,7 @@ import {
     LogLevel,
     MathUtil,
     PolyCollider,
-    RectCollider, RenderPoly,
+    RectCollider,
     Rigidbody,
     Scene,
     SimplePhysics,
@@ -30,8 +29,7 @@ import atlasSpr from "./art/atlas.png";
 import levels from "./levels/level1.json";
 import {RenderPie} from "./RenderPie.ts";
 
-enum Layer
-{
+enum Layer {
     WALL,
     PLAYER,
     EXIT,
@@ -47,16 +45,15 @@ collisionMatrix.addCollision(Layer.WALL, Layer.WALL);
 collisionMatrix.addCollision(Layer.PLAYER, Layer.EXIT);
 collisionMatrix.addCollision(Layer.PLAYER, Layer.KEY);
 
-class MainScene extends Scene
-{
+class MainScene extends Scene {
 
-    onAdded()
-    {
+    onAdded() {
         super.onAdded();
 
         this.addSystem(new SimplePhysics());
         this.addSystem(new PlayerMover());
         this.addSystem(new BlockMover());
+        this.addSystem(new TokenExpirer());
         const collSystem = this.addGlobalSystem(new DiscreteRbodyCollisionSystem(collisionMatrix));
         // this.addGlobalSystem(new DebugCollisionSystem(collSystem));
         this.addGlobalSystem(new Cheats());
@@ -67,84 +64,80 @@ class MainScene extends Scene
 
         console.log(currentLevel.toString());
         loader.loadFn(currentLevel.toString(), (tileId, x, y) => {
-            switch (tileId)
-            {
-                case 0:
-                    break;
-                case 1:
-                    // wall
-                    this.addEntity(new Wall(x, y, collSystem));
-                    break;
-                case 2:
-                    // exit
-                    this.addEntity(new Exit(x, y, collSystem));
-                    break;
-                case 3:
-                    // player
-                    this.addEntity(new Player(x, y, collSystem));
-                    break;
-                case 4:
-                    // tnt
-                    break;
-                case 5:
-                    // breakable wall
-                    break;
-                case 6:
-                    // locked wall
-                    this.addEntity(new LockedWall(x, y, collSystem));
-                    break;
-                case 7:
-                    // key
-                    this.addEntity(new KeyTile(x, y, collSystem));
-                    break;
-                case 9:
-                    // UL
-                    this.addEntity(new SlopeWall(x, y, collSystem, 1));
-                    break;
-                case 10:
-                    // BL
-                    this.addEntity(new SlopeWall(x, y, collSystem, 0));
-                    break;
-                case 11:
-                    // BR
-                    this.addEntity(new SlopeWall(x, y, collSystem, 3));
-                    break;
-                case 12:
-                    // UR
-                    this.addEntity(new SlopeWall(x, y, collSystem, 2));
-                    break;
-                case 13:
-                    // right mover
-                    this.addEntity(new MovingWall(x, y, collSystem, 0));
-                    break;
-                case 14:
-                    // down mover
-                    this.addEntity(new MovingWall(x, y, collSystem, 1));
-                    break;
-                case 15:
-                    // left mover
-                    this.addEntity(new MovingWall(x, y, collSystem, 2));
-                    break;
-                case 16:
-                    // up mover
-                    this.addEntity(new MovingWall(x, y, collSystem, 3));
-                    break;
-            }
-        },
+                switch (tileId) {
+                    case 0:
+                        break;
+                    case 1:
+                        // wall
+                        this.addEntity(new Wall(x, y, collSystem));
+                        break;
+                    case 2:
+                        // exit
+                        this.addEntity(new Exit(x, y, collSystem));
+                        break;
+                    case 3:
+                        // player
+                        this.addEntity(new Player(x, y, collSystem));
+                        break;
+                    case 4:
+                        // tnt
+                        break;
+                    case 5:
+                        // breakable wall
+                        break;
+                    case 6:
+                        // locked wall
+                        this.addEntity(new LockedWall(x, y, collSystem));
+                        break;
+                    case 7:
+                        // key
+                        this.addEntity(new KeyTile(x, y, collSystem));
+                        break;
+                    case 9:
+                        // UL
+                        this.addEntity(new SlopeWall(x, y, collSystem, 1));
+                        break;
+                    case 10:
+                        // BL
+                        this.addEntity(new SlopeWall(x, y, collSystem, 0));
+                        break;
+                    case 11:
+                        // BR
+                        this.addEntity(new SlopeWall(x, y, collSystem, 3));
+                        break;
+                    case 12:
+                        // UR
+                        this.addEntity(new SlopeWall(x, y, collSystem, 2));
+                        break;
+                    case 13:
+                        // right mover
+                        this.addEntity(new MovingWall(x, y, collSystem, 0));
+                        break;
+                    case 14:
+                        // down mover
+                        this.addEntity(new MovingWall(x, y, collSystem, 1));
+                        break;
+                    case 15:
+                        // left mover
+                        this.addEntity(new MovingWall(x, y, collSystem, 2));
+                        break;
+                    case 16:
+                        // up mover
+                        this.addEntity(new MovingWall(x, y, collSystem, 3));
+                        break;
+                }
+            },
             (x, y, ttl) => {
-            this.addEntity(new Token(x, y, collSystem, ttl));
+                this.addEntity(new Token(x, y, collSystem, ttl));
             })
     }
 }
 
-class DummyScene extends Scene
-{
+class DummyScene extends Scene {
 }
 
-export class LD54 extends Game
-{
-    constructor()
-    {
+export class LD54 extends Game {
+    constructor() {
         super({
             width: 256,
             height: 256,
@@ -165,33 +158,53 @@ export class LD54 extends Game
     }
 }
 
+class Ttl extends Component {
+    start: number;
+
+    constructor(readonly ttl: number) {
+        super();
+        this.start = ttl;
+    }
+}
+
+class TokenExpirer extends System<[Ttl, RenderPie]> {
+    types = () => [Ttl, RenderPie];
+
+    update(delta: number): void {
+        this.runOnEntities((entity, ttl, pie) => {
+            ttl.start -= delta / 1000;
+            pie.setPercent(ttl.start * 2 / ttl.ttl);
+
+            if (ttl.start <= 0) {
+                entity.destroy();
+            }
+        })
+    }
+}
+
 class Token extends Entity {
-    constructor(x: number, y: number, readonly collSystem: CollisionSystem, readonly ttl: number)
-    {
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem, readonly ttl: number) {
         super("token", x, y, Layer.TOKEN);
     }
 
-    onAdded()
-    {
+    onAdded() {
         super.onAdded();
         const sprite = this.scene.game.getResource("atlas").texture(2, 2);
 
-        this.addComponent(new RenderPie(8, 8, 8, 0.20, 0xfbf5ef, 0xfbf5ef));
+        this.addComponent(new RenderPie(8, 8, 7, 0.20, 0xfbf5ef, 0xfbf5ef));
         this.addComponent(new Sprite(sprite));
         this.addComponent(new CircleCollider(this.collSystem, {radius: 8, yOff: 8, xOff: 8, layer: Layer.TOKEN}));
-        // this.addComponent(new Ttl(this.ttl));
+        this.addComponent(new Ttl(this.ttl));
 
     }
 }
-class MovingWall extends Entity
-{
-    constructor(x: number, y: number, readonly collSystem: CollisionSystem, private direction: number)
-    {
+
+class MovingWall extends Entity {
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem, private direction: number) {
         super("wall", x, y, Layer.WALL);
     }
 
-    onAdded()
-    {
+    onAdded() {
         super.onAdded();
         const sprite = this.scene.game.getResource("atlas").texture(1, 2);
 
@@ -209,14 +222,14 @@ class MovingWall extends Entity
                 const body = caller.getEntity().getComponent<Rigidbody>(Rigidbody)!;
 
                 // undo movement
-                body.move(-data.result.overlap * data.result.overlap_x,-data.result.overlap * data.result.overlap_y)
+                body.move(-data.result.overlap * data.result.overlap_x, -data.result.overlap * data.result.overlap_y)
 
                 const comp = caller.getEntity().getComponent<BlockMoveMe>(BlockMoveMe)!;
 
                 // left-right
                 if (comp.direction % 2 !== 0 && data.result.overlap_y) {
                     comp.direction = (comp?.direction + 2) % 4;
-                } else if (comp.direction % 2 === 0 && data.result.overlap_x){
+                } else if (comp.direction % 2 === 0 && data.result.overlap_x) {
                     comp.direction = (comp?.direction + 2) % 4;
                 }
             }
@@ -224,10 +237,8 @@ class MovingWall extends Entity
     }
 }
 
-class BlockMoveMe extends Component
-{
-    constructor(public direction: number)
-    {
+class BlockMoveMe extends Component {
+    constructor(public direction: number) {
         super();
     }
 
@@ -238,8 +249,7 @@ class BlockMover extends System<[BlockMoveMe, Rigidbody]> {
 
     speed = 0.01;
 
-    update(delta: number): void
-    {
+    update(delta: number): void {
         this.runOnEntities((entity, moveme, body) => {
             const moveVector = MathUtil.lengthDirXY(delta * this.speed, MathUtil.degToRad(moveme.direction * 90));
             body.move(moveVector.x, moveVector.y);
@@ -248,16 +258,13 @@ class BlockMover extends System<[BlockMoveMe, Rigidbody]> {
 
 }
 
-class Wall extends Entity
-{
+class Wall extends Entity {
 
-    constructor(x: number, y: number, readonly collSystem: CollisionSystem)
-    {
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
         super("wall", x, y, Layer.WALL);
     }
 
-    onAdded()
-    {
+    onAdded() {
         super.onAdded();
         const sprite = this.scene.game.getResource("atlas").texture(0, 1);
 
@@ -266,8 +273,7 @@ class Wall extends Entity
     }
 }
 
-class SlopeWall extends Entity
-{
+class SlopeWall extends Entity {
 
     colliders = [
         [[0, 0], [0, 16], [16, 16]], // BL
@@ -276,13 +282,11 @@ class SlopeWall extends Entity
         [[0, 16], [16, 16], [16, 0]], // BR
     ]
 
-    constructor(x: number, y: number, readonly collSystem: CollisionSystem, readonly rotation: number)
-    {
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem, readonly rotation: number) {
         super("wall", x, y, Layer.WALL);
     }
 
-    onAdded()
-    {
+    onAdded() {
         super.onAdded();
         const sprite = this.scene.game.getResource("atlas").texture(0, 3);
 
@@ -300,15 +304,12 @@ class SlopeWall extends Entity
     }
 }
 
-class KeyTile extends Entity
-{
-    constructor(x: number, y: number, readonly collSystem: CollisionSystem)
-    {
+class KeyTile extends Entity {
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
         super("key", x, y, Layer.KEY);
     }
 
-    onAdded()
-    {
+    onAdded() {
         super.onAdded();
         const sprite = this.scene.game.getResource("atlas").texture(2, 1);
 
@@ -317,16 +318,13 @@ class KeyTile extends Entity
     }
 }
 
-class LockedWall extends Entity
-{
+class LockedWall extends Entity {
 
-    constructor(x: number, y: number, readonly collSystem: CollisionSystem)
-    {
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
         super("lockedwall", x, y, Layer.WALL);
     }
 
-    onAdded()
-    {
+    onAdded() {
         super.onAdded();
         const sprite = this.scene.game.getResource("atlas").texture(1, 1);
 
@@ -336,16 +334,13 @@ class LockedWall extends Entity
 }
 
 
-class Exit extends Entity
-{
+class Exit extends Entity {
 
-    constructor(x: number, y: number, readonly collSystem: CollisionSystem)
-    {
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
         super("exit", x, y, Layer.EXIT);
     }
 
-    onAdded()
-    {
+    onAdded() {
         super.onAdded();
         const sprite = this.scene.game.getResource("atlas").texture(0, 2);
 
@@ -354,16 +349,13 @@ class Exit extends Entity
     }
 }
 
-class Player extends Entity
-{
+class Player extends Entity {
 
-    constructor(x: number, y: number, readonly collSystem: CollisionSystem)
-    {
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
         super("player", x, y, Layer.PLAYER);
     }
 
-    onAdded()
-    {
+    onAdded() {
         super.onAdded();
 
         const sprite = this.scene.game.getResource("atlas").textureFromIndex(0);
@@ -379,8 +371,7 @@ class Player extends Entity
 
         collider.onTriggerEnter.register((caller, data) => {
 
-            switch (data.other.layer)
-            {
+            switch (data.other.layer) {
                 case Layer.EXIT:
                     ++currentLevel;
                 case Layer.WALL:
@@ -401,31 +392,25 @@ class Player extends Entity
     }
 }
 
-class PlayerControlled extends Component
-{
+class PlayerControlled extends Component {
 }
 
-class PlayerMover extends System<[SimplePhysicsBody, PlayerControlled]>
-{
+class PlayerMover extends System<[SimplePhysicsBody, PlayerControlled]> {
 
     rotateSpeed = 0.15;
     moveSpeed = 0.00005;
     types = () => [SimplePhysicsBody, PlayerControlled];
 
-    update(delta: number): void
-    {
+    update(delta: number): void {
         this.runOnEntities((entity, body) => {
-            if (this.getScene().game.keyboard.isKeyDown(Key.KeyA))
-            {
+            if (this.getScene().game.keyboard.isKeyDown(Key.KeyA)) {
                 body.rotate(MathUtil.degToRad(delta * -this.rotateSpeed));
             }
 
-            if (this.getScene().game.keyboard.isKeyDown(Key.KeyD))
-            {
+            if (this.getScene().game.keyboard.isKeyDown(Key.KeyD)) {
                 body.rotate(MathUtil.degToRad(delta * this.rotateSpeed));
             }
-            if (this.getScene().game.keyboard.isKeyDown(Key.KeyW))
-            {
+            if (this.getScene().game.keyboard.isKeyDown(Key.KeyW)) {
                 const moveVector = MathUtil.lengthDirXY(delta * this.moveSpeed, entity.transform.rotation);
                 body.move(moveVector.x, moveVector.y);
             }
@@ -433,22 +418,17 @@ class PlayerMover extends System<[SimplePhysicsBody, PlayerControlled]>
     }
 }
 
-class Cheats extends GlobalSystem
-{
-    types(): LagomType<Component>[]
-    {
+class Cheats extends GlobalSystem {
+    types(): LagomType<Component>[] {
         return [];
     }
 
-    update(delta: number): void
-    {
-        if (this.getScene().game.keyboard.isKeyPressed(Key.ArrowLeft))
-        {
+    update(delta: number): void {
+        if (this.getScene().game.keyboard.isKeyPressed(Key.ArrowLeft)) {
             --currentLevel;
             this.scene.game.setScene(new MainScene(this.scene.game));
         }
-        if (this.getScene().game.keyboard.isKeyPressed(Key.ArrowRight))
-        {
+        if (this.getScene().game.keyboard.isKeyPressed(Key.ArrowRight)) {
             ++currentLevel;
             this.scene.game.setScene(new MainScene(this.scene.game));
         }

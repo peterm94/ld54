@@ -1,31 +1,24 @@
-import * as PIXI from "pixi.js";
-import {PIXIGraphicsComponent} from "lagom-engine";
+import {MathUtil, PIXIGraphicsComponent} from "lagom-engine";
 
-export class RenderPie extends PIXIGraphicsComponent
-{
-    /**
-     * Create a new circle.
-     *
-     * @param xOff Positional X offset.
-     * @param yOff Positional Y offset.
-     * @param radius Radius of the circle.
-     * @param fillColour The inner fill colour. Null for transparent.
-     * @param lineColour The colour of the line.
-     */
-    constructor(xOff: number,
-                yOff: number,
-                radius: number,
+export class RenderPie extends PIXIGraphicsComponent {
+    constructor(readonly xOff: number,
+                readonly yOff: number,
+                readonly radius: number,
                 percentage: number,
-                fillColour: number,
-                lineColour: number = PIXIGraphicsComponent.defaultLine)
-    {
+                readonly fillColour: number,
+                readonly lineColour: number = PIXIGraphicsComponent.defaultLine) {
         super(fillColour, lineColour);
 
-        this.pixiObj.beginFill(fillColour);
-        this.pixiObj.lineStyle(1, lineColour);
-        this.pixiObj.moveTo(xOff, yOff);
-        this.pixiObj.arc(xOff, yOff, radius, 0,  percentage * Math.PI, false);
-        this.pixiObj.lineTo(xOff, yOff);
+        this.setPercent(percentage);
+    }
+
+    setPercent(percentage: number) {
+        this.pixiObj.clear();
+        this.pixiObj.beginFill(this.fillColour);
+        this.pixiObj.lineStyle(1, this.lineColour);
+        this.pixiObj.moveTo(this.xOff, this.yOff);
+        this.pixiObj.arc(this.xOff, this.yOff, this.radius, MathUtil.degToRad(270), MathUtil.degToRad(270) - percentage * Math.PI, true);
+        this.pixiObj.lineTo(this.xOff, this.yOff);
         this.pixiObj.endFill();
     }
 }
