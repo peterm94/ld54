@@ -3,8 +3,7 @@ import atlasSpr from "../art/atlas.png";
 import titleSpr from "../art/title.png";
 import completeSpr from "../art/complete.png";
 import WebFont from "webfontloader";
-import {TitleScene} from "./TitleScene.ts";
-import {MainScene} from "./MainScene.ts";
+import {LastScene, TitleScene} from "./TitleScene.ts";
 
 export enum Layer {
     TOKEN,
@@ -18,11 +17,20 @@ export enum Layer {
 class DummyScene extends Scene {
 }
 
+export interface LevelStats {
+    id: number,
+    time: number,
+    bonus: boolean
+}
+
 export class LD54 extends Game {
 
     static currentLevel = 1;
     static currentLevelTime = 0;
     static currentLevelBonus = false;
+
+    static levelStats: LevelStats[] = []
+    static TOTAL_LEVELS = 20;
 
     constructor() {
         super({
@@ -47,6 +55,7 @@ export class LD54 extends Game {
 
         this.resourceLoader.loadAll().then(
             () => {
+                // this.setScene(new LastScene(this));
                 this.setScene(new TitleScene(this));
                 // this.setScene(new MainScene(this));
             }

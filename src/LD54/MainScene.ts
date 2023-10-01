@@ -47,7 +47,7 @@ export class MainScene extends Scene {
         this.addGlobalSystem(new TimerSystem());
         this.addGlobalSystem(new ScreenShaker(128, 128));
         const collSystem = this.addGlobalSystem(new DiscreteRbodyCollisionSystem(collisionMatrix));
-        // this.addGlobalSystem(new DebugCollisionSystem(collSystem));
+        this.addGlobalSystem(new DebugCollisionSystem(collSystem));
         this.addGlobalSystem(new Cheats());
         this.addGlobalSystem(new FrameTriggerSystem());
         const loader = new TiledMapLoader(levels as TiledMap);

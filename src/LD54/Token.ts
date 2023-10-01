@@ -4,16 +4,16 @@ import {Layer} from "./LD54.ts";
 
 export class Token extends Entity {
     constructor(x: number, y: number, readonly collSystem: CollisionSystem, readonly ttl: number) {
-        super("token", x, y, Layer.TOKEN);
+        super("token", x + 8, y + 8, Layer.TOKEN);
     }
 
     onAdded() {
         super.onAdded();
         const sprite = this.scene.game.getResource("atlas").texture(2, 2);
 
-        this.addComponent(new RenderPie(8, 8, 7, 0.20, 0xfbf5ef, 0xfbf5ef));
-        this.addComponent(new Sprite(sprite));
-        this.addComponent(new CircleCollider(this.collSystem, {radius: 8, yOff: 8, xOff: 8, layer: Layer.TOKEN}));
+        this.addComponent(new RenderPie(0, 0, 7, 0.20, 0xc69fa5, 0xc69fa5));
+        this.addComponent(new Sprite(sprite, {xAnchor: 0.5, yAnchor: 0.5}));
+        this.addComponent(new CircleCollider(this.collSystem, {radius: 8, layer: Layer.TOKEN}));
         this.addComponent(new Ttl(this.ttl));
 
     }

@@ -8,7 +8,8 @@ import {
     Entity,
     Key,
     MathUtil,
-    Rigidbody, ScreenShake,
+    Rigidbody,
+    ScreenShake,
     SimplePhysicsBody,
     Sprite,
     System,
@@ -18,11 +19,13 @@ import {
 import {MainScene} from "./MainScene.ts";
 import {Layer, LD54} from "./LD54.ts";
 import {ActionOnPress} from "./ActionOnPress.ts";
+import {LastScene} from "./TitleScene.ts";
+import {RenderPie} from "./RenderPie.ts";
 
 export class Player extends Entity {
 
     constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
-        super("player", x, y, Layer.PLAYER);
+        super("player", x + 8, y + 8, Layer.PLAYER);
     }
 
     onAdded() {
@@ -54,26 +57,39 @@ export class Player extends Entity {
 
             switch (data.other.layer) {
                 case Layer.EXIT:
-                    caller.getEntity().addComponent(new ShrinkMe(false));
+                    caller.getEntity().addComponent(new ShrinkMe(() => {
+                        const timer = this.scene.addEntity(new Entity("delayed")).addComponent(new Timer(500, null));
+                        timer.onTrigger.register(() => {
+                            this.scene.addGUIEntity(new EndOfLevel());
+                        });
+                    }));
                     caller.getEntity().getComponent(PlayerControlled)?.destroy();
                     caller.getEntity().getComponent(Collider)?.destroy();
                     caller.getScene().getEntityWithName("tracker")?.getComponent(Timer)?.destroy();
                     caller.getEntity().addComponent(new ScreenShake(0.5, 1000));
-                    ++LD54.currentLevel;
                     break;
                 case Layer.WALL:
-                    caller.getEntity().addComponent(new ShrinkMe(true));
+                    caller.getEntity().addComponent(new ShrinkMe(() => {
+                        const timer = this.scene.addEntity(new Entity("delayed")).addComponent(new Timer(500, null));
+                        timer.onTrigger.register(() => {
+                            this.scene.game.setScene(new MainScene(this.scene.game));
+                        });
+                    }));
                     caller.getEntity().getComponent(PlayerControlled)?.destroy();
                     caller.getEntity().getComponent(Collider)?.destroy();
                     caller.getScene().getEntityWithName("tracker")?.getComponent(Timer)?.destroy();
                     caller.getEntity().addComponent(new ScreenShake(1, 500));
                     break;
                 case Layer.KEY:
-                    data.other.getEntity().destroy();
-                    this.scene.entities.filter(value => value.name === "lockedwall").forEach(value => value.destroy());
+                    data.other.getEntity().addComponent(new ShrinkMe(() => {
+                    }));
+                    this.scene.entities.filter(value => value.name === "lockedwall").forEach(value => value.addComponent(new ShrinkMe(() => {
+                    })));
                     break;
                 case Layer.TOKEN:
-                    data.other.getEntity().destroy();
+                    data.other.getEntity().addComponent(new ShrinkMe(() => {
+                    }));
+                    data.other.getEntity().getComponent(RenderPie)?.destroy();
                     LD54.currentLevelBonus = true;
                     break;
                 default:
@@ -86,7 +102,7 @@ export class Player extends Entity {
 export class ShrinkMe extends Component {
     scale = 1;
 
-    constructor(readonly restart: boolean) {
+    constructor(readonly endAction: () => void) {
         super();
     }
 }
@@ -102,12 +118,20 @@ export class EndOfLevel extends Entity {
         const complete = this.scene.game.getResource("complete").textureFromIndex(0);
         const token = this.scene.game.getResource("atlas").texture(2, 2);
 
+        LD54.levelStats.push({id: LD54.currentLevel, bonus: LD54.currentLevelBonus, time: LD54.currentLevelTime});
+        LD54.currentLevel++;
+
         this.addComponent(new Sprite(complete));
-        this.addComponent(new Timer(300, null)).onTrigger.register(caller => {
-            this.scene.addSystem(new ActionOnPress(() => {
-                this.scene.game.setScene(new MainScene(this.scene.game))
-            }));
-        });
+
+        if (LD54.currentLevel < LD54.TOTAL_LEVELS) {
+
+        } else {
+            this.addComponent(new Timer(300, null)).onTrigger.register(caller => {
+                this.scene.addSystem(new ActionOnPress(() => {
+                    this.scene.game.setScene(new LastScene(this.scene.game))
+                }));
+            });
+        }
         this.addComponent(new TextDisp(22, 40, `TIME: ${LD54.currentLevelTime.toString().padStart(3, '0')}`, {fontFamily: "myPixelFont2", fill: 0xfbf5ef, fontSize: 12}));
         if (LD54.currentLevelBonus) {
             this.addComponent(new TextDisp(22, 60, "BONUS:", {fontFamily: "myPixelFont2", fill: 0xfbf5ef, fontSize: 12}));
@@ -129,16 +153,7 @@ export class Shrinker extends System<[Sprite, ShrinkMe]> {
             if (shrinkMe.scale <= 0) {
                 shrinkMe.destroy();
                 entity.destroy();
-                const timer = this.scene.addEntity(new Entity("delayed")).addComponent(new Timer(500, null));
-                if (shrinkMe.restart) {
-                    timer.onTrigger.register(() => {
-                        this.scene.game.setScene(new MainScene(this.scene.game));
-                    });
-                } else {
-                    timer.onTrigger.register(() => {
-                        this.scene.addGUIEntity(new EndOfLevel());
-                    });
-                }
+                shrinkMe.endAction();
             }
         })
     }
