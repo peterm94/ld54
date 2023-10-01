@@ -1,4 +1,4 @@
-import {LD54} from "./LD54.ts";
+import {LD54} from "./LD54/LD54.ts";
 import "./main.css";
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div id="main" style="align-items: center; justify-content: center; height: 100%; display: flex">
