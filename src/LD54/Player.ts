@@ -21,6 +21,7 @@ import {Layer, LD54} from "./LD54.ts";
 import {ActionOnPress} from "./ActionOnPress.ts";
 import {LastScene} from "./TitleScene.ts";
 import {RenderPie} from "./RenderPie.ts";
+import {SoundManager} from "./SoundManager.ts";
 
 export class Player extends Entity {
 

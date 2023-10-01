@@ -23,6 +23,7 @@ import {SlopeWall, Wall} from "./Wall.ts";
 import {KeyTile, LockedWall} from "./LockedWall.ts";
 import {Exit} from "./Exit.ts";
 import {Tracker} from "./Tracker.ts";
+import {SoundManager} from "./SoundManager.ts";
 
 export class MainScene extends Scene
 {
@@ -42,6 +43,7 @@ export class MainScene extends Scene
         collisionMatrix.addCollision(Layer.PLAYER, Layer.TOKEN);
         collisionMatrix.addCollision(Layer.PLAYER_SUCK, Layer.EXIT);
 
+        this.addGUIEntity(new SoundManager());
         this.addSystem(new SimplePhysics());
         this.addSystem(new PlayerMover());
         this.addSystem(new Shrinker());
