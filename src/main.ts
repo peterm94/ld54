@@ -12,4 +12,5 @@ const main = document.querySelector<HTMLDivElement>('#main')!;
 const game = new LD54();
 
 main.appendChild(game.renderer.view);
+game.renderer.view.focus();
 game.start();

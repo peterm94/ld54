@@ -46,6 +46,7 @@ export class TiledMapLoader
             return;
         }
 
+        // @ts-ignore
         objectLayer['objects'].forEach(object => {
             objFn(object.x, object.y, object['properties'][0]['value'])
         });

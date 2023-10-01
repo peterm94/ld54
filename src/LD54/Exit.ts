@@ -1,4 +1,4 @@
-import {CircleCollider, CollisionSystem, Entity, Sprite} from "lagom-engine";
+import {AnimatedSprite, CircleCollider, CollisionSystem, Entity} from "lagom-engine";
 import {Layer} from "./LD54.ts";
 
 export class Exit extends Entity {
@@ -9,9 +9,9 @@ export class Exit extends Entity {
 
     onAdded() {
         super.onAdded();
-        const sprite = this.scene.game.getResource("atlas").texture(0, 2);
+        const sprites = this.scene.game.getResource("atlas").textureSliceFromRow(4, 0, 3);
+        this.addComponent(new AnimatedSprite(sprites, {animationSpeed: 200}));
 
-        this.addComponent(new Sprite(sprite));
         this.addComponent(new CircleCollider(this.collSystem, {radius: 8, xOff: 8, yOff: 8, layer: Layer.EXIT}));
     }
 }

@@ -1,6 +1,9 @@
 import {Game, Log, LogLevel, Scene, SpriteSheet} from "lagom-engine";
 import atlasSpr from "../art/atlas.png";
+import titleSpr from "../art/title.png";
 import {MainScene} from "./MainScene.ts";
+import WebFont from "webfontloader";
+import {TitleScene} from "./TitleScene.ts";
 
 export enum Layer {
     TOKEN,
@@ -8,6 +11,7 @@ export enum Layer {
     EXIT,
     KEY,
     PLAYER,
+    PLAYER_SUCK,
 }
 
 class DummyScene extends Scene {
@@ -27,12 +31,19 @@ export class LD54 extends Game {
 
         Log.logLevel = LogLevel.NONE;
         this.addResource("atlas", new SpriteSheet(atlasSpr, 16, 16));
+        this.addResource("title", new SpriteSheet(titleSpr, 256, 256));
 
         this.setScene(new DummyScene(this));
 
+        WebFont.load({
+            custom: {
+                families: ["myPixelFont"]
+            }
+        });
+
         this.resourceLoader.loadAll().then(
             () => {
-                this.setScene(new MainScene(this));
+                this.setScene(new TitleScene(this));
             }
         )
     }

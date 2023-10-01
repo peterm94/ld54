@@ -1,17 +1,17 @@
 import {
     AnimatedSpriteController,
     BodyType,
-    CircleCollider,
+    CircleCollider, Collider,
     CollisionSystem,
     Component,
     Entity,
-    Key,
+    Key, LagomType,
     MathUtil,
     RenderCircle,
     Rigidbody,
     SimplePhysicsBody,
     Sprite,
-    System
+    System, Timer
 } from "lagom-engine";
 import {MainScene} from "./MainScene.ts";
 import {Layer, LD54} from "./LD54.ts";
@@ -51,7 +51,11 @@ export class Player extends Entity {
 
             switch (data.other.layer) {
                 case Layer.EXIT:
+                    caller.getEntity().addComponent(new ShrinkMe());
+                    caller.getEntity().getComponent(PlayerControlled)?.destroy();
+                    caller.getEntity().getComponent(Collider)?.destroy();
                     ++LD54.currentLevel;
+                    break;
                 case Layer.WALL:
                     // this.scene.entities.filter(value => value.name === "wall").forEach(value => {
                     //     value.getComponent<Sprite>(Sprite)?.destroy();
@@ -73,6 +77,27 @@ export class Player extends Entity {
     }
 }
 
+export class ShrinkMe extends Component {
+    scale = 1;
+}
+export class Shrinker extends System<[Sprite, ShrinkMe]> {
+
+    speed = 5;
+    types = () => [Sprite, ShrinkMe];
+    update(delta: number): void {
+        this.runOnEntities((entity, sprite, shrinkMe) =>  {
+            shrinkMe.scale -= delta / 1000 * this.speed;
+            sprite.applyConfig({yScale: shrinkMe.scale, xScale: shrinkMe.scale});
+
+            if (shrinkMe.scale <= 0) {
+                shrinkMe.destroy();
+                entity.addComponent(new Timer(1000, null, false)).onTrigger.register(() => {
+                    this.scene.game.setScene(new MainScene(this.scene.game));
+                });
+            }
+        })
+    }
+}
 
 class PlayerControlled extends Component {
 }
