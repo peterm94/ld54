@@ -24,13 +24,14 @@ import {RenderPie} from "./RenderPie.ts";
 
 export class Player extends Entity {
 
-    constructor(x: number, y: number, readonly collSystem: CollisionSystem) {
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem,readonly angle: number) {
         super("player", x + 8, y + 8, Layer.PLAYER);
     }
 
     onAdded() {
         super.onAdded();
 
+        this.transform.angle = this.angle;
         const atlas = this.scene.game.getResource("atlas");
 
         this.addComponent(new Rigidbody(BodyType.Discrete));

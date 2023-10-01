@@ -1,14 +1,4 @@
-import {
-    BodyType,
-    CollisionSystem,
-    Component,
-    Entity,
-    MathUtil,
-    RectCollider,
-    Rigidbody,
-    Sprite,
-    System
-} from "lagom-engine";
+import {BodyType, CollisionSystem, Component, Entity, RectCollider, Rigidbody, Sprite, System} from "lagom-engine";
 import {Layer} from "./LD54.ts";
 
 export class MovingWall extends Entity {
@@ -64,9 +54,25 @@ export class BlockMover extends System<[BlockMoveMe, Rigidbody]> {
 
     update(delta: number): void {
         this.runOnEntities((entity, moveme, body) => {
-            const moveVector = MathUtil.lengthDirXY(delta * this.speed, MathUtil.degToRad(moveme.direction * 90));
-            body.move(moveVector.x, moveVector.y);
+            switch (moveme.direction) {
+                case 0:
+                    body.move(delta * this.speed, 0);
+                    break;
+                case 1:
+                    body.move(0, delta * this.speed);
+                    break;
+                case 2:
+                    body.move(-delta * this.speed, 0);
+                    break;
+                case 3:
+                    body.move(0, -delta * this.speed);
+                    break;
+            }
         });
+    }
+
+    fixedUpdate(delta: number) {
+
     }
 
 }

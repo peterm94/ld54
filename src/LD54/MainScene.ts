@@ -50,7 +50,7 @@ export class MainScene extends Scene
         this.addGlobalSystem(new TimerSystem());
         this.addGlobalSystem(new ScreenShaker(128, 128));
         const collSystem = this.addGlobalSystem(new DiscreteRbodyCollisionSystem(collisionMatrix));
-        this.addGlobalSystem(new DebugCollisionSystem(collSystem));
+        // this.addGlobalSystem(new DebugCollisionSystem(collSystem));
         this.addGlobalSystem(new Cheats());
         this.addGlobalSystem(new FrameTriggerSystem());
         const loader = new TiledMapLoader(levels as TiledMap);
@@ -75,14 +75,16 @@ export class MainScene extends Scene
                         this.addEntity(new Exit(x, y, collSystem));
                         break;
                     case 3:
-                        // player
-                        this.addEntity(new Player(x, y, collSystem));
+                        // player left
+                        this.addEntity(new Player(x, y, collSystem, 0));
                         break;
                     case 4:
-                        // tnt
+                        // player up
+                        this.addEntity(new Player(x, y, collSystem, 270));
                         break;
                     case 5:
-                        // breakable wall
+                        // player down
+                        this.addEntity(new Player(x, y, collSystem, 90));
                         break;
                     case 6:
                         // locked wall
@@ -126,6 +128,10 @@ export class MainScene extends Scene
                     case 16:
                         // up mover
                         this.addEntity(new MovingWall(x, y, collSystem, 3));
+                        break;
+                    case 17:
+                        // player right
+                        this.addEntity(new Player(x, y, collSystem, 180));
                         break;
                 }
             })

@@ -25,7 +25,7 @@ export interface LevelStats {
 
 export const bonusTimes = new Map([[1, 10], [2, 10],
     [3, 10], [4, 10], [5, 12], [6, 7], [7, 25], [8, 5], [9, 6], [10, 10], [11, 10],
-    [12, 7],[13, 10],[14, 10],[15, 10],[16, 10],[17, 10],[18, 10],[19, 10],[20, 10]]);
+    [12, 6],[13, 9],[14, 19],[15, 10],[16, 7],[17, 11],[18, 10],[19, 11],[20, 20]]);
 
 export class LD54 extends Game {
 
@@ -34,13 +34,13 @@ export class LD54 extends Game {
     static currentLevelBonus = false;
 
     static levelStats: LevelStats[] = []
-    static TOTAL_LEVELS = 12;
+    static TOTAL_LEVELS = 20;
 
     constructor() {
         super({
             width: 256,
             height: 256,
-            resolution: 2,
+            resolution: 3,
             backgroundColor: 0x272744
         });
 
