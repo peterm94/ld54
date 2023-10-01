@@ -3,7 +3,7 @@
  <image source="tiles.png" width="128" height="32"/>
  <tile id="7">
   <properties>
-   <property name="ttl" type="int" value="10"/>
+   <property name="ttl" type="int" value="-1"/>
   </properties>
  </tile>
 </tileset>

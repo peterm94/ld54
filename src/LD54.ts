@@ -14,7 +14,7 @@ import {
     LogLevel,
     MathUtil,
     PolyCollider,
-    RectCollider,
+    RectCollider, RenderPoly,
     Rigidbody,
     Scene,
     SimplePhysics,
@@ -24,10 +24,11 @@ import {
     System
 } from "lagom-engine";
 
-import {TiledMapLoader} from "./TiledMapLoader.ts";
+import {TiledMap, TiledMapLoader} from "./TiledMapLoader.ts";
 import {DiscreteRbodyCollisionSystem} from "./Physics.ts";
 import atlasSpr from "./art/atlas.png";
 import levels from "./levels/level1.json";
+import {RenderPie} from "./RenderPie.ts";
 
 enum Layer
 {
@@ -35,6 +36,7 @@ enum Layer
     PLAYER,
     EXIT,
     KEY,
+    TOKEN,
 }
 
 let currentLevel = 1;
@@ -58,7 +60,7 @@ class MainScene extends Scene
         const collSystem = this.addGlobalSystem(new DiscreteRbodyCollisionSystem(collisionMatrix));
         // this.addGlobalSystem(new DebugCollisionSystem(collSystem));
         this.addGlobalSystem(new Cheats());
-        const loader = new TiledMapLoader(levels);
+        const loader = new TiledMapLoader(levels as TiledMap);
 
         const layerCount = loader.map.layers.length;
         currentLevel = MathUtil.clamp(currentLevel, 0, layerCount);
@@ -128,7 +130,10 @@ class MainScene extends Scene
                     this.addEntity(new MovingWall(x, y, collSystem, 3));
                     break;
             }
-        })
+        },
+            (x, y, ttl) => {
+            this.addEntity(new Token(x, y, collSystem, ttl));
+            })
     }
 }
 
@@ -147,7 +152,7 @@ export class LD54 extends Game
             backgroundColor: 0x272744
         });
 
-        Log.logLevel = LogLevel.DEBUG;
+        Log.logLevel = LogLevel.NONE;
         this.addResource("atlas", new SpriteSheet(atlasSpr, 16, 16));
 
         this.setScene(new DummyScene(this));
@@ -160,10 +165,26 @@ export class LD54 extends Game
     }
 }
 
+class Token extends Entity {
+    constructor(x: number, y: number, readonly collSystem: CollisionSystem, readonly ttl: number)
+    {
+        super("token", x, y, Layer.TOKEN);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+        const sprite = this.scene.game.getResource("atlas").texture(2, 2);
+
+        this.addComponent(new RenderPie(8, 8, 8, 0.20, 0xfbf5ef, 0xfbf5ef));
+        this.addComponent(new Sprite(sprite));
+        this.addComponent(new CircleCollider(this.collSystem, {radius: 8, yOff: 8, xOff: 8, layer: Layer.TOKEN}));
+        // this.addComponent(new Ttl(this.ttl));
+
+    }
+}
 class MovingWall extends Entity
 {
-    private collider: RectCollider;
-
     constructor(x: number, y: number, readonly collSystem: CollisionSystem, private direction: number)
     {
         super("wall", x, y, Layer.WALL);
@@ -175,7 +196,7 @@ class MovingWall extends Entity
         const sprite = this.scene.game.getResource("atlas").texture(1, 2);
 
         this.addComponent(new Sprite(sprite));
-        this.collider = this.addComponent(new RectCollider(this.collSystem, {
+        const collider = this.addComponent(new RectCollider(this.collSystem, {
             width: 16,
             height: 16,
             layer: Layer.WALL
@@ -183,7 +204,7 @@ class MovingWall extends Entity
         this.addComponent(new BlockMoveMe(this.direction));
         this.addComponent(new Rigidbody(BodyType.Discrete));
 
-        this.collider.onTriggerEnter.register((caller, data) => {
+        collider.onTriggerEnter.register((caller, data) => {
             if (data.other.layer === Layer.WALL) {
                 const body = caller.getEntity().getComponent<Rigidbody>(Rigidbody)!;
 

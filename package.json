@@ -10,7 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "lagom-engine": "1.0.0"
+    "lagom-engine": "1.0.0",
+    "pixi.js": "^6.3.0"
   },
   "devDependencies": {
     "typescript": "^5.0.2",
