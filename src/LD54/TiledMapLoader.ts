@@ -25,8 +25,7 @@ export class TiledMapLoader
      * @param layerName The name of the layer to load.
      * @param fn The function called for every tile loaded. Can be used as an alternative to the function map.
      */
-    loadFn(layerName: string, fn: (tileId: number, x: number, y: number) => void,
-           objFn: (x: number, y:number, ttl: number) => void): void
+    loadFn(layerName: string, fn: (tileId: number, x: number, y: number) => void): void
     {
         const layer = this.map.layers.find(value => value.name === layerName && value.type === "tilelayer");
 
@@ -38,17 +37,6 @@ export class TiledMapLoader
             const row = Math.floor(index / layer.width);
             const column = index - layer.width * row;
             fn(value, this.map.tilewidth * column, this.map.tileheight * row);
-        });
-
-        const objectLayer = this.map.layers.find(value => value.name === layerName && value.type === "objectgroup");
-
-        if (objectLayer === undefined) {
-            return;
-        }
-
-        // @ts-ignore
-        objectLayer['objects'].forEach(object => {
-            objFn(object.x, object.y, object['properties'][0]['value'])
         });
     }
 }

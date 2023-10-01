@@ -18,7 +18,7 @@ import levels from "../levels/level1.json";
 import {Player, PlayerMover, Shrinker} from "./Player.ts";
 import {BlockMover, MovingWall} from "./MovingWall.ts";
 import {Token, TokenExpirer} from "./Token.ts";
-import {Layer, LD54} from "./LD54.ts";
+import {bonusTimes, Layer, LD54} from "./LD54.ts";
 import {SlopeWall, Wall} from "./Wall.ts";
 import {KeyTile, LockedWall} from "./LockedWall.ts";
 import {Exit} from "./Exit.ts";
@@ -92,6 +92,9 @@ export class MainScene extends Scene
                         // key
                         this.addEntity(new KeyTile(x, y, collSystem));
                         break;
+                    case 8:
+                        this.addEntity(new Token(x, y, collSystem, bonusTimes.get(LD54.currentLevel) || 0));
+                        break;
                     case 9:
                         // UL
                         this.addEntity(new SlopeWall(x, y, collSystem, 1));
@@ -125,10 +128,6 @@ export class MainScene extends Scene
                         this.addEntity(new MovingWall(x, y, collSystem, 3));
                         break;
                 }
-            },
-            (x, y, ttl) => {
-                // Idk why but this is off by a spot
-                this.addEntity(new Token(x, y - 16, collSystem, ttl));
             })
     }
 }

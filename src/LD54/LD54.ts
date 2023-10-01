@@ -3,7 +3,7 @@ import atlasSpr from "../art/atlas.png";
 import titleSpr from "../art/title.png";
 import completeSpr from "../art/complete.png";
 import WebFont from "webfontloader";
-import {LastScene, TitleScene} from "./TitleScene.ts";
+import {TitleScene} from "./TitleScene.ts";
 
 export enum Layer {
     TOKEN,
@@ -23,6 +23,10 @@ export interface LevelStats {
     bonus: boolean
 }
 
+export const bonusTimes = new Map([[1, 10], [2, 10],
+    [3, 10], [4, 10], [5, 12], [6, 7], [7, 25], [8, 5], [9, 6], [10, 10], [11, 10],
+    [12, 7],[13, 10],[14, 10],[15, 10],[16, 10],[17, 10],[18, 10],[19, 10],[20, 10]]);
+
 export class LD54 extends Game {
 
     static currentLevel = 1;
@@ -30,7 +34,7 @@ export class LD54 extends Game {
     static currentLevelBonus = false;
 
     static levelStats: LevelStats[] = []
-    static TOTAL_LEVELS = 20;
+    static TOTAL_LEVELS = 12;
 
     constructor() {
         super({

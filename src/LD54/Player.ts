@@ -52,7 +52,6 @@ export class Player extends Entity {
         this.addComponent(new SimplePhysicsBody({angCap: 0.04, angDrag: 0.005, linCap: 1}));
         this.addComponent(new PlayerControlled());
 
-
         collider.onTriggerEnter.register((caller, data) => {
 
             switch (data.other.layer) {
@@ -118,25 +117,38 @@ export class EndOfLevel extends Entity {
         const complete = this.scene.game.getResource("complete").textureFromIndex(0);
         const token = this.scene.game.getResource("atlas").texture(2, 2);
 
-        LD54.levelStats.push({id: LD54.currentLevel, bonus: LD54.currentLevelBonus, time: LD54.currentLevelTime});
-        LD54.currentLevel++;
 
         this.addComponent(new Sprite(complete));
 
-        if (LD54.currentLevel < LD54.TOTAL_LEVELS) {
+        this.scene.addSystem(new ActionOnPress(() => {
+            this.scene.game.setScene(new MainScene(this.scene.game))
+        }, [Key.KeyR]));
 
+        if (LD54.currentLevel < LD54.TOTAL_LEVELS) {
+            this.addComponent(new Timer(300, null)).onTrigger.register(caller => {
+                this.scene.addSystem(new ActionOnPress(() => {
+                    LD54.levelStats.push({id: LD54.currentLevel, bonus: LD54.currentLevelBonus, time: LD54.currentLevelTime});
+                    LD54.currentLevel++;
+                    this.scene.game.setScene(new MainScene(this.scene.game))
+                }, [Key.Space]));
+            });
         } else {
             this.addComponent(new Timer(300, null)).onTrigger.register(caller => {
                 this.scene.addSystem(new ActionOnPress(() => {
+                    LD54.levelStats.push({id: LD54.currentLevel, bonus: LD54.currentLevelBonus, time: LD54.currentLevelTime});
+                    LD54.currentLevel++;
                     this.scene.game.setScene(new LastScene(this.scene.game))
-                }));
+                }, [Key.Space]));
             });
         }
-        this.addComponent(new TextDisp(22, 40, `TIME: ${LD54.currentLevelTime.toString().padStart(3, '0')}`, {fontFamily: "myPixelFont2", fill: 0xfbf5ef, fontSize: 12}));
-        if (LD54.currentLevelBonus) {
-            this.addComponent(new TextDisp(22, 60, "BONUS:", {fontFamily: "myPixelFont2", fill: 0xfbf5ef, fontSize: 12}));
-            this.addComponent(new Sprite(token, {xOffset: 80, yOffset: 60}));
+        this.addComponent(new TextDisp(22, 30, `TIME: ${LD54.currentLevelTime.toString().padStart(3, '0')}`, {fontFamily: "myPixelFont2", fill: 0xfbf5ef, fontSize: 12}));
+        if (LD54.currentLevelBonus || true) {
+            this.addComponent(new TextDisp(22, 45, "BONUS:", {fontFamily: "myPixelFont2", fill: 0xfbf5ef, fontSize: 12}));
+            this.addComponent(new Sprite(token, {xOffset: 80, yOffset: 45}));
         }
+
+        this.addComponent(new TextDisp(14, 68, "<R> Restart", {fontFamily: "myPixelFont2", fill: 0xfbf5ef, fontSize: 8}));
+        this.addComponent(new TextDisp(14, 79, "<Space> Continue", {fontFamily: "myPixelFont2", fill: 0xfbf5ef, fontSize: 8}));
     }
 }
 
