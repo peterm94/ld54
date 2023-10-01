@@ -8,7 +8,7 @@ import {
     Entity,
     Key,
     MathUtil,
-    Rigidbody,
+    Rigidbody, ScreenShake,
     SimplePhysicsBody,
     Sprite,
     System,
@@ -58,6 +58,7 @@ export class Player extends Entity {
                     caller.getEntity().getComponent(PlayerControlled)?.destroy();
                     caller.getEntity().getComponent(Collider)?.destroy();
                     caller.getScene().getEntityWithName("tracker")?.getComponent(Timer)?.destroy();
+                    caller.getEntity().addComponent(new ScreenShake(0.5, 1000));
                     ++LD54.currentLevel;
                     break;
                 case Layer.WALL:
@@ -65,6 +66,7 @@ export class Player extends Entity {
                     caller.getEntity().getComponent(PlayerControlled)?.destroy();
                     caller.getEntity().getComponent(Collider)?.destroy();
                     caller.getScene().getEntityWithName("tracker")?.getComponent(Timer)?.destroy();
+                    caller.getEntity().addComponent(new ScreenShake(1, 500));
                     break;
                 case Layer.KEY:
                     data.other.getEntity().destroy();

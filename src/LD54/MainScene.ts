@@ -7,7 +7,7 @@ import {
     Key,
     LagomType,
     MathUtil,
-    Scene,
+    Scene, ScreenShaker,
     SimplePhysics,
     TextDisp, TimerSystem
 } from "lagom-engine";
@@ -45,6 +45,7 @@ export class MainScene extends Scene {
         this.addSystem(new BlockMover());
         this.addSystem(new TokenExpirer());
         this.addGlobalSystem(new TimerSystem());
+        this.addGlobalSystem(new ScreenShaker(128, 128));
         const collSystem = this.addGlobalSystem(new DiscreteRbodyCollisionSystem(collisionMatrix));
         // this.addGlobalSystem(new DebugCollisionSystem(collSystem));
         this.addGlobalSystem(new Cheats());
