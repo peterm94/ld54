@@ -1,20 +1,21 @@
 import {
     CollisionMatrix,
-    Component, DebugCollisionSystem,
-    Entity,
+    Component,
+    DebugCollisionSystem,
     FrameTriggerSystem,
     GlobalSystem,
     Key,
     LagomType,
     MathUtil,
-    Scene, ScreenShaker,
+    Scene,
+    ScreenShaker,
     SimplePhysics,
-    TextDisp, TimerSystem
+    TimerSystem
 } from "lagom-engine";
 import {DiscreteRbodyCollisionSystem} from "./Physics.ts";
 import {TiledMap, TiledMapLoader} from "./TiledMapLoader.ts";
 import levels from "../levels/level1.json";
-import {EndOfLevel, Player, PlayerMover, Shrinker} from "./Player.ts";
+import {Player, PlayerMover, Shrinker} from "./Player.ts";
 import {BlockMover, MovingWall} from "./MovingWall.ts";
 import {Token, TokenExpirer} from "./Token.ts";
 import {Layer, LD54} from "./LD54.ts";
@@ -23,9 +24,11 @@ import {KeyTile, LockedWall} from "./LockedWall.ts";
 import {Exit} from "./Exit.ts";
 import {Tracker} from "./Tracker.ts";
 
-export class MainScene extends Scene {
+export class MainScene extends Scene
+{
 
-    onAdded() {
+    onAdded()
+    {
         super.onAdded();
 
         LD54.currentLevelTime = 0;
@@ -59,7 +62,8 @@ export class MainScene extends Scene {
 
         console.log(LD54.currentLevel.toString());
         loader.loadFn(LD54.currentLevel.toString(), (tileId, x, y) => {
-                switch (tileId) {
+                switch (tileId)
+                {
                     case 0:
                         break;
                     case 1:
@@ -123,22 +127,28 @@ export class MainScene extends Scene {
                 }
             },
             (x, y, ttl) => {
-                this.addEntity(new Token(x, y, collSystem, ttl));
+                // Idk why but this is off by a spot
+                this.addEntity(new Token(x, y - 16, collSystem, ttl));
             })
     }
 }
 
-class Cheats extends GlobalSystem {
-    types(): LagomType<Component>[] {
+class Cheats extends GlobalSystem
+{
+    types(): LagomType<Component>[]
+    {
         return [];
     }
 
-    update(delta: number): void {
-        if (this.getScene().game.keyboard.isKeyPressed(Key.ArrowLeft)) {
+    update(delta: number): void
+    {
+        if (this.getScene().game.keyboard.isKeyPressed(Key.ArrowLeft))
+        {
             --LD54.currentLevel;
             this.scene.game.setScene(new MainScene(this.scene.game));
         }
-        if (this.getScene().game.keyboard.isKeyPressed(Key.ArrowRight)) {
+        if (this.getScene().game.keyboard.isKeyPressed(Key.ArrowRight))
+        {
             ++LD54.currentLevel;
             this.scene.game.setScene(new MainScene(this.scene.game));
         }

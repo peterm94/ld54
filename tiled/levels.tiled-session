@@ -10,11 +10,11 @@
     ],
     "fileStates": {
         "level1.tmx": {
-            "scale": 4,
-            "selectedLayer": 0,
+            "scale": 2,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 136.25,
-                "y": 192.5
+                "x": 110.5,
+                "y": 207.5
             }
         },
         "levels/level1.json": {
@@ -39,7 +39,7 @@
         },
         "tiles.tsx": {
             "dynamicWrapping": true,
-            "scaleInDock": 1,
+            "scaleInDock": 3,
             "scaleInEditor": 3
         }
     },
@@ -57,8 +57,8 @@
     "project": "levels.tiled-project",
     "property.type": "int",
     "recentFiles": [
-        "level1.tmx",
         "tiles.tsx",
+        "level1.tmx",
         "levels/tiles.tsx",
         "levels/level1.tmx"
     ],
