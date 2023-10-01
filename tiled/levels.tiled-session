@@ -11,10 +11,10 @@
     "fileStates": {
         "level1.tmx": {
             "scale": 4,
-            "selectedLayer": 3,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 193.75,
-                "y": 114
+                "x": 136.25,
+                "y": 192.5
             }
         },
         "levels/level1.json": {
@@ -55,9 +55,10 @@
         "tiles.tsx"
     ],
     "project": "levels.tiled-project",
+    "property.type": "int",
     "recentFiles": [
-        "tiles.tsx",
         "level1.tmx",
+        "tiles.tsx",
         "levels/tiles.tsx",
         "levels/level1.tmx"
     ],
