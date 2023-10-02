@@ -2,6 +2,7 @@ import {AnimatedSprite, Component, Entity, FrameTriggerSystem, Scene, Sprite, Sy
 import {LD54} from "./LD54.ts";
 import {MainScene} from "./MainScene.ts";
 import {ActionOnPress} from "./ActionOnPress.ts";
+import {SoundManager} from "./SoundManager.ts";
 
 export class TitleScene extends Scene {
     onAdded() {
@@ -10,7 +11,9 @@ export class TitleScene extends Scene {
         this.addSystem(new MoveLeft());
         this.addGlobalSystem(new FrameTriggerSystem());
 
-        const disp = this.addGUIEntity(new Entity("titlesc", 0, 0, 0));
+        this.addGUIEntity(new SoundManager());
+
+        const disp = this.addGUIEntity(new Entity("titlesc", 0, 0, -1));
         disp.addComponent(new Sprite(this.game.getResource("title").textureFromIndex(0)));
 
         this.addSystem(new ActionOnPress(() => {
