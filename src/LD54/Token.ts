@@ -1,6 +1,7 @@
 import {CircleCollider, CollisionSystem, Component, Entity, Sprite, System} from "lagom-engine";
 import {RenderPie} from "./RenderPie.ts";
 import {Layer} from "./LD54.ts";
+import {SoundManager} from "./SoundManager.ts";
 
 export class Token extends Entity {
     constructor(x: number, y: number, readonly collSystem: CollisionSystem, readonly ttl: number) {
@@ -15,7 +16,6 @@ export class Token extends Entity {
         this.addComponent(new Sprite(sprite, {xAnchor: 0.5, yAnchor: 0.5}));
         this.addComponent(new CircleCollider(this.collSystem, {radius: 8, layer: Layer.TOKEN}));
         this.addComponent(new Ttl(this.ttl));
-
     }
 }
 
@@ -39,6 +39,7 @@ export class TokenExpirer extends System<[Ttl, RenderPie]> {
 
             if (ttl.start <= 0) {
                 entity.destroy();
+                (entity.getScene().getEntityWithName("audio") as SoundManager).playSound("noPickup");
             }
         })
     }

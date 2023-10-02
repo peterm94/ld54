@@ -3,18 +3,18 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "tiles.tsx",
+    "activeFile": "level1.tmx",
     "expandedProjectPaths": [
-        ".",
-        "levels"
+        "levels",
+        "."
     ],
     "fileStates": {
         "level1.tmx": {
             "scale": 4,
-            "selectedLayer": 13,
+            "selectedLayer": 12,
             "viewCenter": {
-                "x": 199.5,
-                "y": 136.5
+                "x": 168.25,
+                "y": 112
             }
         },
         "levels/level1.json": {
@@ -52,7 +52,7 @@
     "map.tileWidth": 16,
     "map.width": 16,
     "openFiles": [
-        "tiles.tsx"
+        "level1.tmx"
     ],
     "project": "levels.tiled-project",
     "property.type": "int",

@@ -5,6 +5,11 @@ import completeSpr from "../art/complete.png";
 import WebFont from "webfontloader";
 import {TitleScene} from "./TitleScene.ts";
 import rocketSfx from "../sfx/rocket.wav";
+import explosionSfx from "../sfx/explosion.wav";
+import noPickupSfx from "../sfx/no_pickup.wav";
+import pickupSfx from "../sfx/pickup.wav";
+import portalSfx from "../sfx/portal.wav";
+import noWallsSfx from "../sfx/walls_gone.wav";
 export enum Layer {
     TOKEN,
     WALL,
@@ -60,13 +65,12 @@ export class LD54 extends Game {
         // music.loop(true);
         // music.volume(0.7);
 
-        LD54.audioAtlas.load("rocket", rocketSfx).volume(0.3);
-        // LD50.audioAtlas.load("smallExplosion", smallExplosionSound).volume(0.5);
-        // LD50.audioAtlas.load("peopleEscape", peopleEscapeSound).volume(0.3);
-        // LD50.audioAtlas.load("rocketBuilt", rocketBuiltSound).volume(0.4);
-        // LD50.audioAtlas.load("rocketLaunch", rocketLaunchSound).volume(0.4);
-        // LD50.audioAtlas.load("bigRocketLaunch", bigRocketLaunchSound).volume(0.5);
-        // LD50.audioAtlas.load("rocketAvailable", rocketAvailable).volume(0);
+        LD54.audioAtlas.load("rocket", rocketSfx).volume(0.1);
+        LD54.audioAtlas.load("explosion", explosionSfx).volume(0.1);
+        LD54.audioAtlas.load("noPickup", noPickupSfx).volume(0.1);
+        LD54.audioAtlas.load("pickup", pickupSfx).volume(0.1);
+        LD54.audioAtlas.load("portal", portalSfx).volume(0.1);
+        LD54.audioAtlas.load("wallsGone", noWallsSfx).volume(0.1);
 
         WebFont.load({
             custom: {

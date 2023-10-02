@@ -29,6 +29,11 @@ export class Player extends Entity {
         super("player", x + 8, y + 8, Layer.PLAYER);
     }
 
+    onRemoved() {
+        super.onRemoved();
+        (this.scene.getEntityWithName("audio") as SoundManager).stopSound("rocket");
+    }
+
     onAdded() {
         super.onAdded();
 
@@ -68,6 +73,7 @@ export class Player extends Entity {
                     caller.getEntity().getComponent(Collider)?.destroy();
                     caller.getScene().getEntityWithName("tracker")?.getComponent(Timer)?.destroy();
                     caller.getEntity().addComponent(new ScreenShake(0.5, 1000));
+                    (caller.getScene().getEntityWithName("audio") as SoundManager).playSound("portal");
                     break;
                 case Layer.WALL:
                     caller.getEntity().addComponent(new ShrinkMe(() => {
@@ -80,17 +86,20 @@ export class Player extends Entity {
                     caller.getEntity().getComponent(Collider)?.destroy();
                     caller.getScene().getEntityWithName("tracker")?.getComponent(Timer)?.destroy();
                     caller.getEntity().addComponent(new ScreenShake(1, 500));
+                    (caller.getScene().getEntityWithName("audio") as SoundManager).playSound("explosion");
                     break;
                 case Layer.KEY:
                     data.other.getEntity().addComponent(new ShrinkMe(() => {
                     }));
                     this.scene.entities.filter(value => value.name === "lockedwall").forEach(value => value.addComponent(new ShrinkMe(() => {
                     })));
+                    (caller.getScene().getEntityWithName("audio") as SoundManager).playSound("wallsGone");
                     break;
                 case Layer.TOKEN:
                     data.other.getEntity().addComponent(new ShrinkMe(() => {
                     }));
                     data.other.getEntity().getComponent(RenderPie)?.destroy();
+                    (caller.getScene().getEntityWithName("audio") as SoundManager).playSound("pickup");
                     LD54.currentLevelBonus = true;
                     break;
                 default:
@@ -195,8 +204,11 @@ export class PlayerMover extends System<[SimplePhysicsBody, AnimatedSpriteContro
                 const moveVector = MathUtil.lengthDirXY(delta * this.moveSpeed, entity.transform.rotation);
                 body.move(moveVector.x, moveVector.y);
                 sprite.setAnimation(1, false);
+                (entity.scene.getEntityWithName("audio") as SoundManager).playSound("rocket");
             } else {
                 sprite.setAnimation(0, false);
+                (entity.scene.getEntityWithName("audio") as SoundManager).stopSound("rocket");
+
 
             }
         })

@@ -1,35 +1,21 @@
-import {
-    AnimatedSpriteController,
-    Button,
-    Component,
-    Entity,
-    Key,
-    Mouse,
-    SpriteSheet,
-    System,
-    Timer
-} from "lagom-engine";
+import {AnimatedSpriteController, Button, Component, Entity, Key, System, Timer} from "lagom-engine";
 
-import {Layer, LD54} from "./LD54.ts";
+import {LD54} from "./LD54.ts";
 
-class MuteComp extends Component
-{
+class MuteComp extends Component {
 }
+
 const GAME_WIDTH = 256;
 
-class MuteListener extends System<[AnimatedSpriteController, MuteComp]>
-{
+class MuteListener extends System<[AnimatedSpriteController, MuteComp]> {
     types = () => [AnimatedSpriteController, MuteComp];
 
-    update(delta: number): void
-    {
+    update(delta: number): void {
         this.runOnEntities((e: Entity, spr: AnimatedSpriteController) => {
-            if (this.scene.game.mouse.isButtonPressed(Button.LEFT))
-            {
+            if (this.scene.game.mouse.isButtonPressed(Button.LEFT)) {
                 const pos = e.scene.game.renderer.plugins.interaction.mouse.global;
 
-                if (pos.x >= GAME_WIDTH - 24 && pos.x <= GAME_WIDTH - 8 && pos.y >= 8 && pos.y <= 24)
-                {
+                if (pos.x >= GAME_WIDTH - 24 && pos.x <= GAME_WIDTH - 8 && pos.y >= 8 && pos.y <= 24) {
                     (e.scene.getEntityWithName("audio") as SoundManager).toggleMute();
                     spr.setAnimation(Number(LD54.muted));
                 }
@@ -41,17 +27,14 @@ class MuteListener extends System<[AnimatedSpriteController, MuteComp]>
     }
 }
 
-export class SoundManager extends Entity
-{
-    constructor()
-    {
+export class SoundManager extends Entity {
+    constructor() {
         super("audio", GAME_WIDTH - 16 - 8, 8, 0);
 
         this.startMusic();
     }
 
-    onAdded(): void
-    {
+    onAdded(): void {
         super.onAdded();
 
         this.addComponent(new MuteComp());
@@ -71,55 +54,51 @@ export class SoundManager extends Entity
         this.scene.addSystem(new MuteListener());
     }
 
-    toggleMute()
-    {
+    toggleMute() {
         LD54.muted = !LD54.muted;
 
-        if (LD54.muted)
-        {
+        if (LD54.muted) {
             this.stopAllSounds();
-        }
-        else
-        {
+        } else {
             this.startMusic();
         }
     }
 
-    startMusic()
-    {
-        if (!LD54.muted && !LD54.musicPlaying)
-        {
+    startMusic() {
+        if (!LD54.muted && !LD54.musicPlaying) {
             LD54.audioAtlas.play("music");
             LD54.musicPlaying = true;
         }
     }
 
-    stopAllSounds(music = true)
-    {
-        if (music)
-        {
+    stopAllSounds(music = true) {
+        if (music) {
             LD54.audioAtlas.sounds.forEach((v: any, k: string) => v.stop());
             LD54.musicPlaying = false;
-        }
-        else
-        {
+        } else {
             LD54.audioAtlas.sounds.forEach((v: any, k: string) => {
                 if (k !== "music") v.stop();
             });
         }
     }
 
-    onRemoved(): void
-    {
+    onRemoved(): void {
         super.onRemoved();
         this.stopAllSounds(false);
     }
 
-    playSound(name: string)
-    {
-        if (!LD54.muted)
-        {
+    playSound(name: string, restart = false) {
+        if (!LD54.muted) {
+            if (LD54.audioAtlas.sounds.get(name).playing() && !restart) return;
             LD54.audioAtlas.play(name);
         }
+    }
+
+    stopSound(name: string) {
+        LD54.audioAtlas.sounds.forEach((value, key) => {
+            if (key === name) {
+                value.stop();
+            }
+        })
     }
 }
