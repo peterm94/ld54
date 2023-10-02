@@ -1,6 +1,7 @@
 import {AudioAtlas, Game, Log, LogLevel, Scene, SpriteSheet} from "lagom-engine";
 import atlasSpr from "../art/atlas.png";
 import titleSpr from "../art/title.png";
+import starsSpr from "../art/stars.png";
 import completeSpr from "../art/complete.png";
 import WebFont from "webfontloader";
 import {TitleScene} from "./TitleScene.ts";
@@ -57,6 +58,7 @@ export class LD54 extends Game {
         Log.logLevel = LogLevel.NONE;
         this.addResource("atlas", new SpriteSheet(atlasSpr, 16, 16));
         this.addResource("title", new SpriteSheet(titleSpr, 256, 256));
+        this.addResource("stars", new SpriteSheet(starsSpr, 256, 133));
         this.addResource("complete", new SpriteSheet(completeSpr, 128, 96));
 
         this.setScene(new DummyScene(this));
