@@ -153,7 +153,7 @@ export class EndOfLevel extends Entity {
             });
         }
         this.addComponent(new TextDisp(22, 30, `TIME: ${LD54.currentLevelTime.toString().padStart(3, '0')}`, {fontFamily: "myPixelFont2", fill: 0xfbf5ef, fontSize: 12}));
-        if (LD54.currentLevelBonus || true) {
+        if (LD54.currentLevelBonus) {
             this.addComponent(new TextDisp(22, 45, "BONUS:", {fontFamily: "myPixelFont2", fill: 0xfbf5ef, fontSize: 12}));
             this.addComponent(new Sprite(token, {xOffset: 80, yOffset: 45}));
         }
